@@ -5,8 +5,6 @@ import com.major.CampuSphere.dto.request.FeedbackPlatformRequest;
 import com.major.CampuSphere.entity.User;
 import com.major.CampuSphere.exception.ResourceNotFoundException;
 import com.major.CampuSphere.repository.UserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;

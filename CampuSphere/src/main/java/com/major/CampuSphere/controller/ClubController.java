@@ -66,4 +66,14 @@ public class ClubController {
         return ResponseEntity.ok(ApiResponse.success("Left club",
                 clubService.leave(slug, principal.getUserId())));
     }
+
+    @PostMapping("/{slug}/leave")
+    @Operation(summary = "Leave a club (alias — preferred for frontend compatibility)")
+    public ResponseEntity<ApiResponse<ClubResponse>> leaveAlias(
+            @PathVariable String slug,
+            @AuthenticationPrincipal CampuSpherePrincipal principal) {
+
+        return ResponseEntity.ok(ApiResponse.success("Left club",
+                clubService.leave(slug, principal.getUserId())));
+    }
 }

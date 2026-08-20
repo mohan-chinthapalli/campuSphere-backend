@@ -31,7 +31,8 @@ public class MentorshipController {
             @RequestParam(required = false) String skill,
             @RequestParam(required = false) String branch,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal CampuSpherePrincipal principal) {
 
         PageRequest pageable = PageRequest.of(page, size, Sort.by("avgRating").descending());
         return ResponseEntity.ok(ApiResponse.success("Mentors retrieved",
@@ -41,7 +42,8 @@ public class MentorshipController {
     @GetMapping("/{userId}")
     @Operation(summary = "Get mentor profile by user ID")
     public ResponseEntity<ApiResponse<MentorResponse>> getByUserId(
-            @PathVariable Long userId) {
+            @PathVariable Long userId,
+            @AuthenticationPrincipal CampuSpherePrincipal principal) {
 
         return ResponseEntity.ok(ApiResponse.success(
                 mentorshipService.getMentorByUserId(userId)));

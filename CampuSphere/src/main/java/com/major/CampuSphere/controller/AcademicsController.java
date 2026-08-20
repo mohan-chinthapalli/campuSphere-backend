@@ -31,6 +31,19 @@ public class AcademicsController {
                 academicsService.getDashboard(principal.getUserId())));
     }
 
+    /**
+     * Alias: GET /api/student/me — matches the frontend data.ts expected endpoint.
+     */
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('STUDENT')")
+    @Operation(summary = "Get student academic profile (alias for /dashboard)")
+    public ResponseEntity<ApiResponse<DashboardResponse>> getMe(
+            @AuthenticationPrincipal CampuSpherePrincipal principal) {
+
+        return ResponseEntity.ok(ApiResponse.success("Student data retrieved",
+                academicsService.getDashboard(principal.getUserId())));
+    }
+
     @GetMapping("/timetable")
     @PreAuthorize("hasRole('STUDENT')")
     @Operation(summary = "Get student timetable (all days)")

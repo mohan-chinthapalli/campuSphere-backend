@@ -36,7 +36,7 @@ public class AiConversation {
 
     @Column(name = "conversation_type", nullable = false, length = 10)
     @Builder.Default
-    private String conversationType = "CHAT";
+    private String conversationType = "CHAT"; // Values: CHAT, DOUBT
 
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("createdAt ASC")

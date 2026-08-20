@@ -6,6 +6,7 @@ import com.major.CampuSphere.dto.response.SkillSessionResponse;
 import com.major.CampuSphere.security.CampuSpherePrincipal;
 import com.major.CampuSphere.service.impl.SkillSessionServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -49,21 +50,25 @@ public class SkillSessionController {
     }
 
     @PostMapping("/{slug}/enroll")
-    @Operation(summary = "Enroll in a skill session")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Enroll in a skill session (auth required)")
     public ResponseEntity<ApiResponse<SkillSessionResponse>> enroll(
             @PathVariable String slug,
             @AuthenticationPrincipal CampuSpherePrincipal principal) {
 
+        // principal is guaranteed non-null here — security config requires auth for POST
         return ResponseEntity.ok(ApiResponse.success("Enrolled in session",
                 skillSessionService.enroll(slug, principal.getUserId())));
     }
 
     @DeleteMapping("/{slug}/enroll")
-    @Operation(summary = "Unenroll from a skill session")
+    @SecurityRequirement(name = "BearerAuth")
+    @Operation(summary = "Unenroll from a skill session (auth required)")
     public ResponseEntity<ApiResponse<Void>> unenroll(
             @PathVariable String slug,
             @AuthenticationPrincipal CampuSpherePrincipal principal) {
 
+        // principal is guaranteed non-null here — security config requires auth for DELETE
         skillSessionService.unenroll(slug, principal.getUserId());
         return ResponseEntity.ok(ApiResponse.ok("Unenrolled from session"));
     }

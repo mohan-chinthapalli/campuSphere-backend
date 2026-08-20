@@ -151,10 +151,10 @@ public class EventServiceImpl {
     // ─── Mapping ──────────────────────────────────────────────────
 
     private EventResponse toResponse(Event e, Long currentUserId) {
+        // Single count query — avoids the N+1 from iterating registrations collection
+        long regCount = registrationRepo.countByEventId(e.getId());
         boolean registered = currentUserId != null &&
                 registrationRepo.existsByEventIdAndUserId(e.getId(), currentUserId);
-
-        long regCount = registrationRepo.countByEventId(e.getId());
 
         List<EventResponse.AgendaItem> agendaItems = e.getAgenda().stream()
                 .map(a -> EventResponse.AgendaItem.builder()

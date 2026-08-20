@@ -5,6 +5,7 @@ import com.major.CampuSphere.dto.request.UpdateStudentProfileRequest;
 import com.major.CampuSphere.dto.response.*;
 import com.major.CampuSphere.enums.Role;
 import com.major.CampuSphere.security.CampuSpherePrincipal;
+import com.major.CampuSphere.service.impl.AuthServiceImpl;
 import com.major.CampuSphere.service.impl.ProfileServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 public class ProfileController {
 
     private final ProfileServiceImpl profileService;
+    private final AuthServiceImpl authService;
 
     // ─── Current user profile (role-aware) ────────────────────────
 
@@ -30,23 +32,30 @@ public class ProfileController {
     public ResponseEntity<ApiResponse<?>> getMyProfile(
             @AuthenticationPrincipal CampuSpherePrincipal principal) {
 
-        if ("STUDENT".equals(principal.getRole())) {
-            return ResponseEntity.ok(ApiResponse.success(
+        return switch (principal.getRole()) {
+            case "STUDENT" -> ResponseEntity.ok(ApiResponse.success(
                     profileService.getStudentProfile(principal.getUserId())));
-        } else {
-            return ResponseEntity.ok(ApiResponse.success(
+            case "FACULTY" -> ResponseEntity.ok(ApiResponse.success(
                     profileService.getFacultyProfile(principal.getUserId())));
-        }
+            default -> ResponseEntity.ok(ApiResponse.success(
+                    authService.getCurrentUser(principal.getUserId())));
+        };
     }
 
     @PutMapping
-    @Operation(summary = "Update profile of the currently authenticated user")
+    @Operation(summary = "Update profile of the currently authenticated user (role-aware)")
     public ResponseEntity<ApiResponse<?>> updateMyProfile(
             @AuthenticationPrincipal CampuSpherePrincipal principal,
-            @RequestBody Object body) {
-        // Role-based dispatch is done by the dedicated endpoints below.
-        // This endpoint is a convenience alias.
-        return ResponseEntity.ok(ApiResponse.ok("Use /api/profile/student or /api/profile/faculty"));
+            @Valid @RequestBody(required = false) Object body) {
+        // Redirect clients to role-specific endpoints — documented in API contract
+        if ("STUDENT".equals(principal.getRole())) {
+            return ResponseEntity.ok(ApiResponse.error(
+                    "Use PUT /api/profile/student to update a student profile",
+                    "USE_SPECIFIC_ENDPOINT", "/api/profile/student"));
+        }
+        return ResponseEntity.ok(ApiResponse.error(
+                "Use PUT /api/profile/faculty to update a faculty profile",
+                "USE_SPECIFIC_ENDPOINT", "/api/profile/faculty"));
     }
 
     // ─── Student profile ──────────────────────────────────────────
