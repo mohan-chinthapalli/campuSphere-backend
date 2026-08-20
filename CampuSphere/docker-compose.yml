@@ -1,0 +1,56 @@
+version: "3.9"
+
+# ============================================================
+# CampuSphere — Development Docker Compose
+# Usage: docker-compose up -d
+# ============================================================
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: campusphere-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: campusphere
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_USER: campusphere
+      MYSQL_PASSWORD: ${DB_PASSWORD:-root}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: campusphere-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/campusphere?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_USERNAME: campusphere
+      DB_PASSWORD: ${DB_PASSWORD:-root}
+      JWT_SECRET: ${JWT_SECRET:-campusphere-dev-secret-change-in-production-32chars}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+volumes:
+  mysql_data:
+    driver: local
