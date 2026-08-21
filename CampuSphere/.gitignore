@@ -4,6 +4,16 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Secrets — NEVER commit these ###
+.env
+*.env
+.env.local
+.env.production
+application-local.properties
+application-local.yml
+application-prod.properties
+application-prod.yml
+
 ### STS ###
 .apt_generated
 .classpath
