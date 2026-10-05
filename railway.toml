@@ -1,0 +1,19 @@
+# ============================================================
+# Railway deployment configuration for CampuSphere backend
+# The Spring Boot project lives in the /CampuSphere subdirectory.
+# ============================================================
+
+[build]
+# Build using the Dockerfile inside /CampuSphere
+builder = "dockerfile"
+dockerfilePath = "CampuSphere/Dockerfile"
+# Build context is /CampuSphere so COPY instructions work correctly
+dockerBuildContext = "CampuSphere"
+
+[deploy]
+# Railway injects PORT at runtime; the app reads it via ${PORT:8080}
+startCommand = ""
+healthcheckPath = "/actuator/health"
+healthcheckTimeout = 60
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3

@@ -28,11 +28,12 @@ USER campusphere
 # Copy built JAR
 COPY --from=build /app/target/*.jar app.jar
 
-# Expose application port
+# Expose default port (Railway overrides via PORT env var at runtime)
 EXPOSE 8080
 
-# Health check
+# Health check — uses PORT env var with 8080 as fallback
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-  CMD wget -qO- http://localhost:8080/actuator/health || exit 1
+  CMD wget -qO- http://localhost:${PORT:-8080}/actuator/health || exit 1
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Pass PORT to the JVM so Spring Boot picks it up via ${PORT:8080}
+ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${PORT:-8080}"]
