@@ -1,0 +1,15 @@
+# ============================================================
+# CampuSphere — Root .gitignore
+# ============================================================
+
+# The frontend is a separate git repository cloned into this folder.
+# It must NOT be tracked by the outer (backend) repo.
+frontend/
+
+# Docker volumes / local overrides
+*.env
+.env
+
+# OS artefacts
+.DS_Store
+Thumbs.db
