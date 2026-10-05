@@ -21,6 +21,10 @@
         <java.version>17</java.version>
         <jjwt.version>0.12.6</jjwt.version>
         <springdoc.version>2.6.0</springdoc.version>
+        <!-- Override Spring Boot BOM flyway version — 10.15.0 does not support PostgreSQL 17.
+             Flyway 10.20.1 explicitly supports PostgreSQL 17 (Supabase runs PG 17.x).
+             Also adds flyway-database-postgresql which is required in Flyway 10.x for PostgreSQL. -->
+        <flyway.version>10.20.1</flyway.version>
     </properties>
 
     <dependencies>
@@ -61,10 +65,17 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Flyway for PostgreSQL (core module supports PostgreSQL natively) -->
+        <!-- Flyway for PostgreSQL 17 (Supabase).
+             flyway-core provides the migration engine.
+             flyway-database-postgresql is required in Flyway 10.x for PostgreSQL dialect support.
+             Both are pinned to 10.20.1 which supports PostgreSQL 17. -->
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
         <!-- Lombok -->
