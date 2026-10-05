@@ -2,7 +2,7 @@
 
 **Smart Campus Management System** — Spring Boot REST API backend.
 
-This backend serves the existing [CampuSphere frontend](https://github.com/mohan-chinthapalli/campusphereio/tree/frontend).
+This backend serves the existing [CampuSphere frontend](https://github.com/mohan-chinthapalli/campusphereio).
 
 ---
 
@@ -12,12 +12,13 @@ This backend serves the existing [CampuSphere frontend](https://github.com/mohan
 |---|---|
 | Language | Java 17 |
 | Framework | Spring Boot 3.3.5 |
-| Database | MySQL 8.0 |
+| Database | **Supabase PostgreSQL** |
+| ORM | Spring Data JPA / Hibernate 6 |
 | Auth | JWT (jjwt 0.12.6) |
 | Migrations | Flyway |
 | Docs | SpringDoc OpenAPI / Swagger UI |
 | Build | Maven |
-| Tests | JUnit 5, Mockito |
+| Tests | JUnit 5, Mockito, H2 (PostgreSQL mode) |
 
 ---
 
@@ -25,11 +26,13 @@ This backend serves the existing [CampuSphere frontend](https://github.com/mohan
 
 - Java 17+
 - Maven 3.8+
-- MySQL 8.0 (or Docker)
+- A [Supabase](https://supabase.com) project (free tier works)
+
+No local database installation required — the database is Supabase PostgreSQL (hosted).
 
 ---
 
-## Quick Start (Local)
+## Quick Start
 
 ### 1. Clone
 
@@ -38,42 +41,55 @@ git clone https://github.com/mohan-chinthapalli/campuSphere-backend.git
 cd campuSphere-backend/CampuSphere
 ```
 
-### 2. Create MySQL database
+### 2. Create a Supabase project
 
-```sql
-CREATE DATABASE campusphere CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-```
+1. Go to [supabase.com](https://supabase.com) and create a new project
+2. Wait for provisioning to complete
+3. Go to **Settings → Database** to find your connection details
 
-### 3. Configure environment
+### 3. Configure environment variables
 
 ```bash
 cp .env.example .env
-# Edit .env — set DB_PASSWORD and JWT_SECRET at minimum
+# Edit .env with your Supabase credentials
 ```
 
-Key variables:
+Required variables:
 
-| Variable | Default | Description |
+| Variable | Where to find it | Example |
 |---|---|---|
-| `DB_URL` | `jdbc:mysql://localhost:3306/campusphere?...` | MySQL JDBC URL |
-| `DB_USERNAME` | `root` | MySQL username |
-| `DB_PASSWORD` | `root` | MySQL password |
-| `JWT_SECRET` | *(change this!)* | JWT signing secret (32+ chars) |
-| `FRONTEND_URL` | `http://localhost:3000` | Frontend origin for CORS |
+| `SUPABASE_DB_URL` | Settings → Database → Connection string → JDBC | `jdbc:postgresql://db.xxxx.supabase.co:5432/postgres?sslmode=require` |
+| `SUPABASE_DB_USERNAME` | Settings → Database → User | `postgres` |
+| `SUPABASE_DB_PASSWORD` | Settings → Database → Password | your-db-password |
+| `JWT_SECRET` | Generate a random string (32+ chars) | — |
+| `FRONTEND_URL` | Your frontend origin | `http://localhost:3000` |
+
+> ⚠️ Use the **Direct connection** (port 5432) for this Spring Boot backend. Always include `?sslmode=require` in the URL.
 
 ### 4. Run
 
-```bash
-./mvnw spring-boot:run
+**PowerShell (Windows):**
+```powershell
+$env:SUPABASE_DB_URL="jdbc:postgresql://db.xxxx.supabase.co:5432/postgres?sslmode=require"
+$env:SUPABASE_DB_USERNAME="postgres"
+$env:SUPABASE_DB_PASSWORD="your-password"
+$env:JWT_SECRET="your-32-char-secret"
+.\mvnw.cmd spring-boot:run
 ```
 
-Or with explicit environment variables:
-
-```bash
-./mvnw spring-boot:run -Dspring-boot.run.jvmArguments="-DDB_PASSWORD=yourpass -DJWT_SECRET=yoursecret"
+**Or load from `.env` file then run:**
+```powershell
+Get-Content .env | ForEach-Object {
+  if ($_ -match '^([^#][^=]+)=(.+)$') {
+    [System.Environment]::SetEnvironmentVariable($Matches[1].Trim(), $Matches[2].Trim())
+  }
+}
+.\mvnw.cmd spring-boot:run
 ```
 
-The server starts on **http://localhost:8080**
+The server starts on **http://localhost:8080**.
+
+Flyway runs automatically on startup and creates all tables + seed data in Supabase.
 
 ---
 
@@ -81,14 +97,12 @@ The server starts on **http://localhost:8080**
 
 ```bash
 cp .env.example .env
-# Edit .env
+# Edit .env with Supabase credentials
 
 docker-compose up -d
 ```
 
-Services:
-- Backend: http://localhost:8080
-- MySQL: localhost:3306
+No local database container — Docker Compose runs only the Spring Boot backend. Database is Supabase (remote).
 
 ---
 
@@ -96,30 +110,33 @@ Services:
 
 Available at: **http://localhost:8080/swagger-ui.html**
 
-OpenAPI JSON: http://localhost:8080/api-docs
+OpenAPI JSON: **http://localhost:8080/api-docs**
 
 ---
 
 ## Database Migrations
 
-Flyway runs automatically on startup. Migration files are in:
+Flyway runs automatically on startup and applies all migrations in order.
 
 ```
 src/main/resources/db/migration/
-├── V1__initial_schema.sql      # Users, profiles, campus places
-├── V2__events_clubs.sql        # Events, clubs, memberships
-├── V3__learning_hub.sql        # Subjects, materials, sessions
+├── V1__initial_schema.sql           # users, student_profiles, faculty_profiles, campus_places
+├── V2__events_clubs.sql             # events, clubs, memberships
+├── V3__learning_hub.sql             # subjects, learning_materials, skill_sessions
 ├── V4__announcements_notifications.sql
-├── V5__mentorship_feedback.sql # Mentorship, feedback, timetable, deadlines
-├── V6__ai_conversations.sql    # AI conversations and messages
-└── V7__seed_data.sql           # Demo seed data
+├── V5__mentorship_feedback.sql      # mentorship, feedback, timetable, deadlines
+├── V6__ai_conversations.sql         # AI conversation history
+├── V7__seed_data.sql                # Demo seed data
+└── V8__rename_year_column.sql       # No-op on PostgreSQL (historical parity)
 ```
+
+All migrations are **PostgreSQL-native** (no MySQL syntax).
 
 ---
 
 ## Demo Accounts
 
-> ⚠️ For development only. Never use these in production.
+> ⚠️ Development only. These are seeded by V7 — never use in production.
 
 | Role | Email | Password |
 |---|---|---|
@@ -135,7 +152,11 @@ src/main/resources/db/migration/
 mvn test
 ```
 
-Tests use H2 in-memory database — no MySQL required.
+Tests use **H2 in-memory database in PostgreSQL-compatibility mode**. No Supabase connection required for tests.
+
+```
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0  ✓
+```
 
 ---
 
@@ -143,53 +164,53 @@ Tests use H2 in-memory database — no MySQL required.
 
 ```
 src/main/java/com/major/CampuSphere/
-├── config/          # Security, JPA auditing, OpenAPI
+├── config/          # SecurityConfig, OpenApiConfig, JpaAuditingConfig
 ├── controller/      # REST controllers (HTTP layer only)
 ├── dto/
-│   ├── request/     # Incoming request DTOs
-│   └── response/    # Outgoing response DTOs
-├── entity/          # JPA entities
-├── enums/           # Role, MaterialType, Priority, etc.
-├── exception/       # GlobalExceptionHandler + custom exceptions
+│   ├── request/     # Validated incoming request DTOs
+│   └── response/    # Outgoing response DTOs (ApiResponse envelope)
+├── entity/          # JPA entities (GenerationType.IDENTITY, EnumType.STRING)
+├── enums/           # Role, MaterialType, Priority, NotificationType, etc.
+├── exception/       # GlobalExceptionHandler + typed exception classes
 ├── repository/      # Spring Data JPA repositories
-├── security/        # JWT filter, JwtUtil, principal
+├── security/        # JWT filter, JwtUtil, CampuSpherePrincipal
 └── service/
-    └── impl/        # Business logic implementations
+    └── impl/        # Business logic (AuthService, EventService, AiService, etc.)
 ```
 
 ---
 
 ## API Overview
 
-| Module | Base Path |
+| Module | Endpoints |
 |---|---|
-| Auth | `POST /api/auth/login`, `POST /api/auth/register` |
+| Auth | `POST /api/auth/login`, `/register`, `/logout`, `GET /api/auth/me` |
 | Events | `GET/POST /api/events`, `POST /api/events/{slug}/register` |
 | Clubs | `GET/POST /api/clubs`, `POST /api/clubs/{slug}/join` |
-| Announcements | `GET /api/announcements` |
-| Learning Hub | `GET /api/materials`, `GET /api/subjects` |
+| Announcements | `GET /api/announcements`, `POST /api/announcements` |
+| Learning Hub | `GET /api/materials`, `GET /api/subjects`, `PATCH /api/materials/{id}/progress` |
 | Skill Sessions | `GET /api/sessions`, `POST /api/sessions/{slug}/enroll` |
 | Mentorship | `GET /api/mentors`, `POST /api/mentors/request` |
-| Academics | `GET /api/academics/dashboard` |
-| Profile | `GET/PUT /api/profile` |
-| Notifications | `GET /api/notifications` |
-| Feedback | `POST /api/feedback/platform`, `POST /api/feedback/faculty` |
+| Academics | `GET /api/academics/dashboard`, `/timetable`, `/deadlines` |
+| Profile | `GET/PUT /api/profile`, `/profile/student`, `/profile/faculty` |
+| Notifications | `GET /api/notifications`, `PATCH /api/notifications/read-all` |
+| Feedback | `POST /api/feedback/platform`, `/feedback/faculty` |
 | Campus Navigation | `GET /api/places` |
-| AI | `POST /api/ai/ask-doubt`, `POST /api/ai/chat` |
+| AI | `POST /api/ai/ask-doubt`, `/ai/chat`, `GET /api/ai/conversations` |
 
-Full documentation: **Swagger UI** at `/swagger-ui.html`
+Full interactive documentation: **http://localhost:8080/swagger-ui.html**
 
 ---
 
 ## AI Integration
 
-The AI module currently runs in **demo mode** — no external LLM is called.
+The AI module runs in **demo mode** — no external LLM API is called.
 
-To connect a real LLM later:
+To connect a real LLM:
 1. Create `RealAiServiceImpl implements AiService`
 2. Annotate it `@Primary`
 3. Remove `@Primary` from `DemoAiServiceImpl`
-4. The controller and API contract remain unchanged
+4. The controller and API contract remain **unchanged**
 
 ---
 
@@ -198,3 +219,13 @@ To connect a real LLM later:
 ```
 GET /actuator/health
 ```
+
+---
+
+## Security Notes
+
+- Passwords hashed with BCrypt (strength 12)
+- JWT tokens expire in 24h by default
+- All secrets via environment variables — never hardcoded
+- CORS restricted to `FRONTEND_URL`
+- `spring.jpa.hibernate.ddl-auto=validate` — Flyway owns schema
