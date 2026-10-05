@@ -1,0 +1,31 @@
+# ============================================================
+# Docker build context exclusions for CampuSphere backend
+# ============================================================
+
+# Never include secrets or local environment files in Docker build
+.env
+*.env
+.env.local
+.env.production
+
+# Maven build output — use the multi-stage build instead
+target/
+
+# IDE and OS artefacts
+.idea/
+*.iml
+.vscode/
+.DS_Store
+*.suo
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+HELP.md
+
+# Docker files themselves (not needed inside the build context)
+docker-compose.yml
