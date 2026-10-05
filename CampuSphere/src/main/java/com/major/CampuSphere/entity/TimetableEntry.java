@@ -33,7 +33,7 @@ public class TimetableEntry {
     private User faculty;
 
     @Column(name = "day_of_week", nullable = false)
-    private int dayOfWeek;
+    private short dayOfWeek;
 
     @Column(name = "sort_order", nullable = false)
     @Builder.Default
