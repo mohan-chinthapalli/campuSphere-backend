@@ -21,7 +21,6 @@
         <java.version>17</java.version>
         <jjwt.version>0.12.6</jjwt.version>
         <springdoc.version>2.6.0</springdoc.version>
-        <flyway.version>10.15.0</flyway.version>
     </properties>
 
     <dependencies>
@@ -55,18 +54,17 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
-        <!-- MySQL -->
+        <!-- PostgreSQL -->
         <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Flyway for MySQL -->
+        <!-- Flyway for PostgreSQL (core module supports PostgreSQL natively) -->
         <dependency>
             <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-mysql</artifactId>
-            <version>${flyway.version}</version>
+            <artifactId>flyway-core</artifactId>
         </dependency>
 
         <!-- Lombok -->

@@ -1,9 +1,11 @@
 -- ============================================================
 -- V8: Rename student_profiles.year → academic_year
--- Root cause: "year" is a reserved keyword in H2 (used for tests)
--- and causes JdbcSQLSyntaxErrorException during schema generation.
--- Using an explicit safe column name keeps MySQL and H2 compatible.
+-- PostgreSQL note: V1 already creates this column as academic_year
+-- so this migration is a no-op on a fresh PostgreSQL install.
+-- This migration exists to maintain Flyway version history parity
+-- with older MySQL installs that had the column named 'year'.
+-- On PostgreSQL this migration validates successfully as a no-op.
 -- ============================================================
 
-ALTER TABLE student_profiles
-    CHANGE COLUMN `year` `academic_year` VARCHAR(50) NOT NULL;
+-- No-op: column is already named academic_year in V1 (PostgreSQL)
+SELECT 1;
