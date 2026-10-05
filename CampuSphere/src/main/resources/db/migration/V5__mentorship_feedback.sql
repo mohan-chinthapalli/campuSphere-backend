@@ -48,7 +48,8 @@ CREATE TABLE feedback_platform (
     CONSTRAINT fk_fp_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Faculty Feedback (anonymous aggregate — no student FK exposed)
+-- Faculty Feedback (anonymous — no student FK stored, responses are aggregate only)
+-- NOTE: No student FK by design — faculty feedback is anonymous per product requirements
 CREATE TABLE feedback_faculty (
     id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     faculty_id      BIGINT UNSIGNED NOT NULL,
@@ -63,7 +64,6 @@ CREATE TABLE feedback_faculty (
     PRIMARY KEY (id),
     CONSTRAINT fk_ff_faculty FOREIGN KEY (faculty_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_ff_faculty (faculty_id)
-    -- NOTE: No student FK — faculty feedback is anonymous per product requirements
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Student Timetable (classes per day)

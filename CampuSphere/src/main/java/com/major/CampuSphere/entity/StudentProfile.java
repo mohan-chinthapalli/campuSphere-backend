@@ -28,7 +28,7 @@ public class StudentProfile {
     @Column(nullable = false, length = 100)
     private String branch;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "academic_year", nullable = false, length = 50)
     private String year;
 
     @Column(nullable = false)
