@@ -35,8 +35,8 @@ public class EventServiceImpl {
     @Transactional(readOnly = true)
     public PageResponse<EventResponse> listEvents(String category, String q, Long currentUserId, Pageable pageable) {
         Page<Event> page = eventRepo.searchEvents(
-                category != null && category.isBlank() ? null : category,
-                q != null && q.isBlank() ? null : q,
+                category == null ? "" : category,
+                q == null ? "" : q,
                 pageable);
         return PageResponse.from(page.map(e -> toResponse(e, currentUserId)));
     }

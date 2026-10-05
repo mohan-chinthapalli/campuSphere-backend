@@ -17,10 +17,10 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Query("""
             SELECT e FROM Event e
-            WHERE (:category IS NULL OR LOWER(e.category) = LOWER(:category))
-              AND (:q IS NULL OR LOWER(e.title) LIKE LOWER(CONCAT('%', :q, '%'))
-                             OR LOWER(e.tagline) LIKE LOWER(CONCAT('%', :q, '%'))
-                             OR LOWER(e.venue) LIKE LOWER(CONCAT('%', :q, '%')))
+            WHERE (:category = '' OR LOWER(e.category) = LOWER(:category))
+              AND (:q = '' OR LOWER(e.title) LIKE LOWER(CONCAT('%', :q, '%'))
+                           OR LOWER(e.tagline) LIKE LOWER(CONCAT('%', :q, '%'))
+                           OR LOWER(e.venue) LIKE LOWER(CONCAT('%', :q, '%')))
             ORDER BY e.startsAt ASC
             """)
     Page<Event> searchEvents(@Param("category") String category,
