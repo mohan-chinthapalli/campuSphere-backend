@@ -10,6 +10,9 @@ WORKDIR /app
 COPY mvnw mvnw.cmd pom.xml ./
 COPY .mvn .mvn
 
+# Ensure the Maven wrapper is executable (file mode may be lost when committed from Windows)
+RUN chmod +x mvnw
+
 # Download dependencies (cached unless pom.xml changes)
 RUN ./mvnw dependency:go-offline -q
 
